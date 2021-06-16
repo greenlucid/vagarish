@@ -1,4 +1,4 @@
-import Case from "../entities/Case"
+import Dispute from "../entities/Dispute"
 import { MyContext } from "src/types"
 import { Arg, Ctx, Field, InputType, Int, Query } from "type-graphql"
 import Evidence from "../entities/Evidence"
@@ -13,11 +13,11 @@ class SearchInput {
 }
 
 class SearchResolver {
-  @Query(() => [Case])
+  @Query(() => [Dispute])
   async search(
     @Ctx() { em }: MyContext,
     @Arg("options") options: SearchInput
-  ): Promise<Case[]> {
+  ): Promise<Dispute[]> {
     const evidenceVariables = {
       $or: [
         {
@@ -29,22 +29,32 @@ class SearchResolver {
       ],
     }
     const matchedEvidences = await em.find(Evidence, evidenceVariables)
-    const caseIds = matchedEvidences.map((evidence) => evidence.caseId)
+    const disputeIds = matchedEvidences.map((evidence) => evidence.disputeId)
 
-    const caseVariables = {
-      $or: [
-        {
-          textContent: { $re: options.substring },
-        },
-        {
-          id: { $in: caseIds },
-        },
-      ],
+    const getDisputeVariables = () => {
+      if (options.courtIds) {
+        return {
+          $and: [
+            {
+              id: { $in: disputeIds },
+            },
+            {
+              courtId: { $in: options.courtIds },
+            },
+          ],
+        }
+      } else {
+        return {
+          id: { $in: disputeIds },
+        }
+      }
     }
 
-    const matchedCases = await em.find(Case, caseVariables)
+    const disputeVariables = getDisputeVariables()
 
-    return matchedCases
+    const matchedDisputes = await em.find(Dispute, disputeVariables)
+
+    return matchedDisputes
   }
 }
 

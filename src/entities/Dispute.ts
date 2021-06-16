@@ -9,7 +9,7 @@ import { ObjectId } from "@mikro-orm/mongodb"
 
 @ObjectType()
 @Entity()
-class Case {
+class Dispute {
   @PrimaryKey()
   _id!: ObjectId
 
@@ -17,17 +17,14 @@ class Case {
   @SerializedPrimaryKey()
   id!: string
 
+  // the int id given by KlerosLiquid
   @Field(() => Int)
   @Property()
-  caseId!: number
+  klerosLiquidId!: number
 
   @Field(() => Int)
   @Property()
   courtId!: number
-
-  @Field()
-  @Property()
-  textContent!: string
 
   @Field(() => [String])
   evidenceIds!: string[]
@@ -41,4 +38,4 @@ class Case {
   createdIn!: Date
 }
 
-export default Case
+export default Dispute

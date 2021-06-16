@@ -33,9 +33,10 @@ class Evidence {
   @Property()
   createdIn!: Date
 
+  // careful, this is the virtual mongodb id, not KlerosLiquid's disputeId
   @Field(() => String)
   @Property()
-  caseId!: string
+  disputeId!: string
 }
 
 export default Evidence

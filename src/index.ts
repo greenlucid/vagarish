@@ -4,12 +4,12 @@ import express from "express"
 import { buildSchema } from "type-graphql"
 import http from "http"
 import SearchResolver from "./resolvers/search"
-import Case from "./entities/Case"
+import Dispute from "./entities/Dispute"
 import Evidence from "./entities/Evidence"
 
 const main = async () => {
   const orm = await MikroORM.init({
-    entities: [Case, Evidence],
+    entities: [Dispute, Evidence],
     dbName: "vagarish",
     type: "mongo",
     clientUrl: "mongodb://localhost:27017",
