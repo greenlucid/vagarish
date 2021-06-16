@@ -1,0 +1,1 @@
+export const IPFS_ROOT = "https://ipfs.kleros.io"

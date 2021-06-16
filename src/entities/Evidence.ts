@@ -29,9 +29,9 @@ class Evidence {
   @Property()
   fileTextContent?: string
 
-  @Field(() => String)
+  @Field(() => String, { nullable: true })
   @Property()
-  createdIn!: Date
+  createdIn?: Date
 
   // careful, this is the virtual mongodb id, not KlerosLiquid's disputeId
   @Field(() => String)

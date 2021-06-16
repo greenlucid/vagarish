@@ -1,0 +1,88 @@
+[
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": false, "name": "_name", "type": "string" },
+      { "indexed": false, "name": "_ticker", "type": "string" },
+      { "indexed": false, "name": "_symbolMultihash", "type": "string" },
+      { "indexed": true, "name": "_address", "type": "address" }
+    ],
+    "name": "TokenSubmitted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "name": "_tokenID", "type": "bytes32" },
+      { "indexed": false, "name": "_registrationRequest", "type": "bool" }
+    ],
+    "name": "RequestSubmitted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "name": "_requester", "type": "address" },
+      { "indexed": true, "name": "_challenger", "type": "address" },
+      { "indexed": true, "name": "_tokenID", "type": "bytes32" },
+      { "indexed": false, "name": "_status", "type": "uint8" },
+      { "indexed": false, "name": "_disputed", "type": "bool" },
+      { "indexed": false, "name": "_appealed", "type": "bool" }
+    ],
+    "name": "TokenStatusChange",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "name": "_tokenID", "type": "bytes32" },
+      { "indexed": true, "name": "_contributor", "type": "address" },
+      { "indexed": true, "name": "_request", "type": "uint256" },
+      { "indexed": false, "name": "_round", "type": "uint256" },
+      { "indexed": false, "name": "_value", "type": "uint256" }
+    ],
+    "name": "RewardWithdrawal",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "name": "_metaEvidenceID", "type": "uint256" },
+      { "indexed": false, "name": "_evidence", "type": "string" }
+    ],
+    "name": "MetaEvidence",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "name": "_arbitrator", "type": "address" },
+      { "indexed": true, "name": "_disputeID", "type": "uint256" },
+      { "indexed": false, "name": "_metaEvidenceID", "type": "uint256" },
+      { "indexed": false, "name": "_evidenceGroupID", "type": "uint256" }
+    ],
+    "name": "Dispute",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "name": "_arbitrator", "type": "address" },
+      { "indexed": true, "name": "_evidenceGroupID", "type": "uint256" },
+      { "indexed": true, "name": "_party", "type": "address" },
+      { "indexed": false, "name": "_evidence", "type": "string" }
+    ],
+    "name": "Evidence",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "name": "_arbitrator", "type": "address" },
+      { "indexed": true, "name": "_disputeID", "type": "uint256" },
+      { "indexed": false, "name": "_ruling", "type": "uint256" }
+    ],
+    "name": "Ruling",
+    "type": "event"
+  }
+]

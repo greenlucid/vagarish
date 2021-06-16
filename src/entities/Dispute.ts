@@ -18,24 +18,37 @@ class Dispute {
   id!: string
 
   // the int id given by KlerosLiquid
-  @Field(() => Int)
+  @Field(() => String)
   @Property()
-  klerosLiquidId!: number
-
-  @Field(() => Int)
-  @Property()
-  courtId!: number
+  klerosLiquidId!: string
 
   @Field(() => [String])
-  evidenceIds!: string[]
-
-  @Field()
   @Property()
-  createdBy!: string
+  evidenceIds!: string[]
 
   @Field(() => String)
   @Property()
-  createdIn!: Date
+  arbitrable!: string
+
+  @Field(() => String, { nullable: true })
+  @Property()
+  evidenceGroupID?: string
+
+  @Field(() => String, { nullable: true })
+  @Property()
+  metaEvidenceID?: string
+
+  @Field(() => Int, { nullable: true })
+  @Property()
+  courtId?: number
+
+  @Field(() => String, { nullable: true })
+  @Property()
+  createdBy?: string
+
+  @Field(() => String, { nullable: true })
+  @Property()
+  createdIn?: Date
 }
 
 export default Dispute
