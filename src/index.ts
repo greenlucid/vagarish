@@ -1,3 +1,5 @@
+require('dotenv').config()
+
 import { MikroORM } from "@mikro-orm/core"
 import { ApolloServer } from "apollo-server-express"
 import express from "express"
@@ -6,6 +8,7 @@ import http from "http"
 import SearchResolver from "./resolvers/search"
 import Dispute from "./entities/Dispute"
 import Evidence from "./entities/Evidence"
+import { fetchAndStoreEvents } from "./initialize"
 
 const main = async () => {
   const orm = await MikroORM.init({
@@ -39,6 +42,8 @@ const main = async () => {
   httpServer.listen(4000, () => {
     console.log("server started on 192.168.1.43:4000")
   })
+
+  await fetchAndStoreEvents()
 }
 
 main()

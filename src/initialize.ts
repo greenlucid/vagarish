@@ -42,7 +42,8 @@ const arbitrableABI = JSON.parse(
   fs.readFileSync("files/abis/ArbitrableABI.json", "utf-8")
 )
 
-const infuraUrl = "secret_infura_url"
+const infuraUrl = process.env.INFURA_URL
+
 const web3: Web3 = new Web3Launch(infuraUrl)
 const klerosLiquidContractAddress = "0x988b3a538b618c7a603e1c11ab82cd16dbe28069"
 
