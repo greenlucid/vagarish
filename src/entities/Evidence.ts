@@ -21,7 +21,7 @@ class Evidence {
   @Property()
   textContent!: string
 
-  @Field()
+  @Field(() => Boolean, { nullable: true })
   @Property()
   hasFile!: boolean
 
@@ -34,7 +34,6 @@ class Evidence {
   createdIn?: Date
 
   // careful, this is the virtual mongodb id, not KlerosLiquid's disputeId
-  @Field(() => String)
   @Property()
   disputeId!: string
 }

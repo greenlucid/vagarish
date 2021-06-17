@@ -2,6 +2,7 @@ import Dispute from "../entities/Dispute"
 import { MyContext } from "src/types"
 import { Arg, Ctx, Field, InputType, Int, Query } from "type-graphql"
 import Evidence from "../entities/Evidence"
+import SearchResult from "../entities/SearchResult"
 
 @InputType()
 class SearchInput {
@@ -13,11 +14,11 @@ class SearchInput {
 }
 
 class SearchResolver {
-  @Query(() => [Dispute])
+  @Query(() => [SearchResult])
   async search(
     @Ctx() { em }: MyContext,
     @Arg("options") options: SearchInput
-  ): Promise<Dispute[]> {
+  ): Promise<SearchResult[]> {
     const evidenceVariables = {
       $or: [
         {
@@ -53,8 +54,24 @@ class SearchResolver {
     const disputeVariables = getDisputeVariables()
 
     const matchedDisputes = await em.find(Dispute, disputeVariables)
+    // now that we got relevant info, filter it into SearchResults.
+    const searchResultCores: SearchResult[] = matchedDisputes.map(
+      (dispute) => ({
+        id: dispute.id,
+        klerosLiquidId: dispute.klerosLiquidId,
+        arbitrable: dispute.arbitrable,
+        matchedEvidence: [],
+      })
+    )
+    // push evidence into result cores
+    matchedEvidences.forEach((evidence) => {
+      const searchResult = searchResultCores.find(
+        (searchResult) => searchResult.id === evidence.disputeId
+      ) as SearchResult
+      searchResult.matchedEvidence.push(evidence)
+    })
 
-    return matchedDisputes
+    return searchResultCores
   }
 }
 
