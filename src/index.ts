@@ -4,11 +4,11 @@ import { MikroORM } from "@mikro-orm/core"
 import { ApolloServer } from "apollo-server-express"
 import express from "express"
 import { buildSchema } from "type-graphql"
-import http from "http"
 import SearchResolver from "./resolvers/search"
 import Dispute from "./entities/Dispute"
 import Evidence from "./entities/Evidence"
 import { fetchAndStoreEvents, initDataToDb } from "./initialize"
+import { CORS_OPTIONS } from "./constants"
 
 const main = async () => {
   const orm = await MikroORM.init({
@@ -20,11 +20,6 @@ const main = async () => {
 
   const app = express()
 
-  const corsOptions = {
-    origin: "http://192.168.1.43:3000",
-    credentials: true,
-  }
-
   const apolloServer = new ApolloServer({
     schema: await buildSchema({
       resolvers: [SearchResolver],
@@ -35,12 +30,12 @@ const main = async () => {
 
   app.use("/test", (_req, res) => res.json({ can: "can" }))
 
-  const httpServer = http.createServer(app)
+  apolloServer.applyMiddleware({ app, cors: CORS_OPTIONS })
 
-  apolloServer.applyMiddleware({ app, cors: corsOptions })
+  app.use(express.static("build"))
 
-  httpServer.listen(4000, () => {
-    console.log("server started on 192.168.1.43:4000")
+  app.listen(process.env.PORT || 4000, () => {
+    console.log(`server started on port ${process.env.PORT}`)
   })
 
   if (process.argv.length === 3 && process.argv[2] === "init") {
