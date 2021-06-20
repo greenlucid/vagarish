@@ -34,12 +34,19 @@ import {
   parsePdf,
   parseTextContent,
 } from "./utils"
+import path from "path"
 
 const klerosLiquidABI = JSON.parse(
-  fs.readFileSync("files/abis/KlerosLiquidABI.json", "utf-8")
+  fs.readFileSync(
+    path.join(__dirname, "files/abis/KlerosLiquidABI.json"),
+    "utf-8"
+  )
 )
 const arbitrableABI = JSON.parse(
-  fs.readFileSync("files/abis/ArbitrableABI.json", "utf-8")
+  fs.readFileSync(
+    path.join(__dirname, "files/abis/ArbitrableABI.json"),
+    "utf-8"
+  )
 )
 
 const infuraUrl = process.env.INFURA_URL
@@ -83,7 +90,7 @@ export const fetchAndStoreEvents = async () => {
   const allDisputeCreations =
     (await getDisputeCreations()) as DisputeCreationEvent[]
   fs.writeFileSync(
-    "files/events/disputeCreations.json",
+    path.join(__dirname, "files/events/disputeCreations.json"),
     JSON.stringify(allDisputeCreations),
     "utf-8"
   )
@@ -103,7 +110,7 @@ export const fetchAndStoreEvents = async () => {
     console.log(`got ${i + 1} of ${distinctArbitrables.length}`)
   }
   fs.writeFileSync(
-    "files/events/arbitrableDatas.json",
+    path.join(__dirname, "files/events/arbitrableDatas.json"),
     JSON.stringify(arbitrableDatas),
     "utf-8"
   )
@@ -144,9 +151,12 @@ const extractTextBasedFile = async (
   console.log("yo! appears we got a file.")
   console.log(ipfsEvidence)
   try {
-    await download(`${IPFS_ROOT}${ipfsEvidence.fileURI}`, "files/tempFile")
+    await download(
+      `${IPFS_ROOT}${ipfsEvidence.fileURI}`,
+      path.join(__dirname, "files/tempFile")
+    )
 
-    const file = fs.readFileSync("files/tempFile")
+    const file = fs.readFileSync(path.join(__dirname, "files/tempFile"))
 
     const straightFormats = ["txt", "md"]
     if (straightFormats.includes(ipfsEvidence.fileTypeExtension as string)) {
@@ -224,10 +234,16 @@ export const initDataToDb = async (
   await em.nativeDelete(Evidence, {})
 
   const disputeCreations = JSON.parse(
-    fs.readFileSync("files/events/disputeCreations.json", "utf-8")
+    fs.readFileSync(
+      path.join(__dirname, "files/events/disputeCreations.json"),
+      "utf-8"
+    )
   ) as DisputeCreationEvent[]
   const arbitrableDatas = JSON.parse(
-    fs.readFileSync("files/events/arbitrableDatas.json", "utf-8")
+    fs.readFileSync(
+      path.join(__dirname, "files/events/arbitrableDatas.json"),
+      "utf-8"
+    )
   ) as { disputes: DisputeEvent[]; evidences: EvidenceEvent[] }[]
 
   disputeCreations.forEach((event) => createAndPersistDispute(event, em))
