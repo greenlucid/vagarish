@@ -47,7 +47,9 @@ export const download = (url: string, filePath: string): Promise<void> => {
           })
           .on("error", (err) => {
             file.destroy()
-            fs.unlink(filePath, () => reject(err))
+            if (fs.existsSync(filePath)) {
+              fs.unlink(filePath, () => reject(err))
+            }
           })
           .pipe(file)
       } else {
