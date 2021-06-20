@@ -35,7 +35,9 @@ export const download = (url: string, filePath: string): Promise<void> => {
   return new Promise((resolve, reject) => {
     pkg.get(uri.href).on("response", (res) => {
       if (res.statusCode === 200) {
-        fs.unlinkSync(filePath)
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath)
+        }
         const file = fs.createWriteStream(filePath, { flags: "wx" })
         res
           .on("end", () => {
