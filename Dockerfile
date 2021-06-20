@@ -9,11 +9,13 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 
 RUN npm install
-COPY . .
 RUN npm run build
 
 # Bundle app source
 COPY . .
 
+ENV NODE_ENV production
+
 EXPOSE 8080
 CMD [ "node", "dist/index.js", "init" ]
+USER node

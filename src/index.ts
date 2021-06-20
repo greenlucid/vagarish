@@ -1,5 +1,3 @@
-require("dotenv").config()
-
 import { MikroORM } from "@mikro-orm/core"
 import { ApolloServer } from "apollo-server-express"
 import express from "express"
@@ -10,12 +8,16 @@ import Evidence from "./entities/Evidence"
 import { fetchAndStoreEvents, initDataToDb } from "./initialize"
 import { CORS_OPTIONS } from "./constants"
 
+if ((process.env.ENV = "development")) {
+  require("dotenv").config()
+}
+
 const main = async () => {
   const orm = await MikroORM.init({
     entities: [Dispute, Evidence],
     dbName: "vagarish",
     type: "mongo",
-    clientUrl: "mongodb://localhost:27017",
+    clientUrl: process.env.MONGO_URL,
   })
 
   const app = express()

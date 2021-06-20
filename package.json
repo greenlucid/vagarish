@@ -8,6 +8,7 @@
     "watch:dist": "tsc -w",
     "watch:src": "nodemon dist/index.js",
     "start": "node dist/index.js",
+    "start:dev": "ENV=development node dist/index.js",
     "init": "node dist/index.js init",
     "dev": "concurrently \"npm run watch:src\" \"npm run watch:dist\"",
     "build:web": "rm -rf build && cd ../vagarish-web/ && npm run build && cp -r build ../vagarish"
