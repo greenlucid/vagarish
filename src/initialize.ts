@@ -188,6 +188,7 @@ const mutateAndFlushEvidence = async (
   // and there are a lot of these.
   const dispute = em.findOne(Dispute, {
     evidenceGroupID: event.returnValues._evidenceGroupID,
+    arbitrable: event.address,
   })
 
   // while that resolves, do ipfs query
