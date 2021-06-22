@@ -4,7 +4,7 @@ import { MikroORM } from "@mikro-orm/core"
 import { ApolloServer } from "apollo-server-express"
 import express from "express"
 import { buildSchema } from "type-graphql"
-import SearchResolver from "./resolvers/search"
+import SearchResolver, { performSearch } from "./resolvers/search"
 import Dispute from "./entities/Dispute"
 import Evidence from "./entities/Evidence"
 import { fetchAndStoreEvents, initDataToDb } from "./initialize"
@@ -29,6 +29,12 @@ const main = async () => {
   })
 
   app.use("/test", (_req, res) => res.json({ can: "can" }))
+
+  app.use("/api/search", async (req, res) => {
+    const substring = req.query.substring as string
+    const searchResults = await performSearch(orm.em, { substring })
+    res.json(searchResults)
+  })
 
   apolloServer.applyMiddleware({ app, cors: CORS_OPTIONS })
 
