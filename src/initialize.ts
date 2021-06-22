@@ -15,7 +15,7 @@
 
 import Web3 from "web3"
 import { EntityManager, IDatabaseDriver, Connection } from "@mikro-orm/core"
-import * as axios from "axios"
+import axios from "axios"
 
 const Web3Launch = require("web3")
 import * as fs from "fs"
@@ -30,6 +30,7 @@ import Evidence from "./entities/Evidence"
 import { IPFS_ROOT } from "./constants"
 import {
   download,
+  getHashFromIpfs,
   ipfsEvidenceHasTextFile,
   parsePdf,
   parseTextContent,
@@ -148,10 +149,9 @@ const mutateAndPersistDispute = async (
 
 const extractTextBasedFile = async (
   ipfsEvidence: IpfsEvidence
-): Promise<string | undefined> => {
+): Promise<string | null> => {
   // download file and get it in files/tempFile
-  console.log("yo! appears we got a file.")
-  console.log(ipfsEvidence)
+  console.log("Extracting text...")
   try {
     await download(
       `${IPFS_ROOT}${ipfsEvidence.fileURI}`,
@@ -165,19 +165,120 @@ const extractTextBasedFile = async (
       return file.toString()
     } else if (ipfsEvidence.fileTypeExtension === "pdf") {
       const parseResult = await parsePdf(file)
-      if (parseResult === null) return undefined
+      if (parseResult === null) return null
       return parseResult
     } else {
       // then I don't know what format this is.
       console.log(
         `I cant parse this format "${ipfsEvidence.fileTypeExtension}"`
       )
-      return undefined
+      return null
     }
   } catch (e) {
     console.log("got another weird error")
-    return undefined
+    return null
   }
+}
+
+const downloadEvidence = async (
+  event: EvidenceEvent
+): Promise<IpfsEvidence | null> => {
+  // sometimes it starts with "ipfs" instead of "/ipfs/", messing everything up.
+  // will get deprecated and ignored in the future
+  const evidencePath =
+    event.returnValues._evidence[0] === "/"
+      ? event.returnValues._evidence
+      : `/${event.returnValues._evidence}`
+
+  try {
+    const ipfsResponse = await axios.get(`${IPFS_ROOT}${evidencePath}`)
+    const ipfsEvidence = ipfsResponse.data as IpfsEvidence
+    return ipfsEvidence
+  } catch (e) {
+    console.log("Error downloading evidence. Event was:")
+    console.log(event)
+    console.log("Error was:")
+    console.log(e)
+    return null
+  }
+}
+
+const storeEvidence = (event: EvidenceEvent, ipfsEvidence: IpfsEvidence) => {
+  fs.writeFileSync(
+    path.join(
+      goodDirname,
+      `files/ipfs/${getHashFromIpfs(event.returnValues._evidence)}`
+    ),
+    JSON.stringify(ipfsEvidence)
+  )
+}
+
+const storeTextFile = (ipfsEvidence: IpfsEvidence, fileText: string) => {
+  fs.writeFileSync(
+    path.join(
+      goodDirname,
+      `files/ipfs/${getHashFromIpfs(ipfsEvidence.fileURI as string)}`
+    ),
+    fileText
+  )
+}
+
+const evidenceRoutine = async (
+  event: EvidenceEvent
+): Promise<{
+  evidence: IpfsEvidence
+  fileTextContent: string | null | undefined
+} | null> => {
+  //0. abort if hash cannot be retrieved.
+  if (getHashFromIpfs(event.returnValues._evidence) === null) {
+    console.log(`_evidence does not match format. got ${event.returnValues._evidence}`)
+    return null
+  }
+
+  //1. check if evidence is stored. If stored, goto 3.
+  let ipfsEvidence: IpfsEvidence | null = null
+  const evidenceChosenPath = path.join(
+    goodDirname,
+    `files/ipfs/${getHashFromIpfs(event.returnValues._evidence)}`
+  )
+  if (!fs.existsSync(evidenceChosenPath)) {
+    //2. Download evidence.
+    ipfsEvidence = await downloadEvidence(event)
+    if (ipfsEvidence === null) {
+      // then skip this evidence.
+      return null
+    }
+    storeEvidence(event, ipfsEvidence)
+  } else {
+    // it existed, so we take it.
+    ipfsEvidence = JSON.parse(fs.readFileSync(evidenceChosenPath, "utf-8"))
+  }
+  const sureEvidence = ipfsEvidence as IpfsEvidence
+
+  //3. check if there is a textFile.
+  if (ipfsEvidenceHasTextFile(sureEvidence)) {
+    //4. if there is, check if is downloaded. if it is, goto 6.
+    const textFileChosenPath = path.join(
+      goodDirname,
+      `files/ipfs/${getHashFromIpfs(sureEvidence.fileURI as string)}`
+    )
+    if (!fs.existsSync(textFileChosenPath)) {
+      //5. download and parse
+      const textContent = await extractTextBasedFile(sureEvidence)
+      if (textContent === null) {
+        console.log("Error on parsing text file, got nullified")
+        return { evidence: sureEvidence, fileTextContent: null }
+      }
+      storeTextFile(sureEvidence, textContent)
+      return { evidence: sureEvidence, fileTextContent: textContent }
+    } else {
+      // it did exist, so we take it.
+      const textContent = fs.readFileSync(textFileChosenPath, "utf-8") as string
+      return { evidence: sureEvidence, fileTextContent: textContent }
+    }
+  }
+  // there is no file at all!
+  return { evidence: sureEvidence, fileTextContent: undefined }
 }
 
 const mutateAndFlushEvidence = async (
@@ -192,21 +293,13 @@ const mutateAndFlushEvidence = async (
   })
 
   // while that resolves, do ipfs query
-  // sometimes it starts with "ipfs" instead of "/ipfs/", messing with everything.
-  const evidencePath =
-    event.returnValues._evidence[0] === "/"
-      ? event.returnValues._evidence
-      : `/${event.returnValues._evidence}`
-  try {
-    const ipfsResponse = await axios.default.get(`${IPFS_ROOT}${evidencePath}`)
-    let fileTextContent: string | undefined
-    const ipfsEvidence = ipfsResponse.data as IpfsEvidence
-    if (ipfsEvidenceHasTextFile(ipfsEvidence)) {
-      fileTextContent = await extractTextBasedFile(ipfsEvidence)
-    } else {
-      fileTextContent = undefined
-    }
-
+  const evidenceRoutineReturn = await evidenceRoutine(event)
+  if (evidenceRoutineReturn !== null) {
+    const { evidence: ipfsEvidence, fileTextContent } =
+      evidenceRoutineReturn as {
+        evidence: IpfsEvidence
+        fileTextContent: string | null | undefined
+      }
     const awaitedDispute = await dispute
     if (awaitedDispute !== null) {
       const evidence = em.create(Evidence, {
@@ -220,13 +313,9 @@ const mutateAndFlushEvidence = async (
       await em.persistAndFlush(awaitedDispute)
     } else {
       console.log("No dispute holds that EvidenceGroupID")
-      console.log(ipfsEvidence)
-      console.log("Ignore and keep moving")
     }
-  } catch (e) {
-    console.log("Might have got error with the url")
-    console.log(e)
-    console.log("skipping something")
+  } else {
+    console.log("Evidence Routine went null. Skipping...")
   }
 }
 

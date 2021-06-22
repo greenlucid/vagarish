@@ -7,7 +7,8 @@ export const ipfsEvidenceHasTextFile = (ipfsEvidence: IpfsEvidence) => {
   return (
     ipfsEvidence.fileURI &&
     ipfsEvidence.fileURI.length > 0 &&
-    understoodFormats.includes(ipfsEvidence.fileTypeExtension as string)
+    understoodFormats.includes(ipfsEvidence.fileTypeExtension as string) &&
+    getHashFromIpfs(ipfsEvidence.fileURI) !== null
   )
 }
 
@@ -69,13 +70,28 @@ export const parsePdf = async (pdfFile: Buffer): Promise<string | null> => {
     (resolve: (value: string | null) => void) => {
       pdfParse(pdfFile)
         .then((data) => resolve(data.text))
-        .catch((e) => {
-          console.log("got error")
-          console.log(e)
+        .catch((_e) => {
           resolve(null)
         })
     }
   )
 
   return parsePdfPromise
+}
+
+export const getHashFromIpfs = (uri: string): string | null => {
+  // _evidence is even a field that should be trusted
+  // format is like /ipfs/adfdsafasdfkjasdfkjlasdf/thing.json
+  // will allow not starting with a slash
+  const format = /^\/?ipfs\/[a-zA-Z0-9]{46}\//
+  if (!format.test(uri)) {
+    return null
+  }
+  // ipfs/ is 5 chars long, that's why there's a 5
+  const firstPoint = uri.indexOf("ipfs") + 5
+  // increment by firstPoint because you get the index of the sliced string!
+  // e.g. it's shorter now so you'd miss some of the hash
+  const secondPoint = uri.slice(firstPoint).indexOf("/") + firstPoint
+  const hash = uri.slice(firstPoint, secondPoint)
+  return hash
 }

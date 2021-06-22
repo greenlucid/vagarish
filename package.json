@@ -12,8 +12,8 @@
     "init": "node dist/index.js init",
     "dev": "concurrently \"npm run watch:src\" \"npm run watch:dist\"",
     "build:web": "rm -rf build && cd ../vagarish-web/ && npm run build && cp -r build ../vagarish",
-    "build:full": "npm run build && npm run build:web"
-
+    "build:full": "npm run build && npm run build:web",
+    "clean:ipfs": "cd files && rm -r ipfs && mkdir ipfs"
   },
   "prettier": {
     "semi": false

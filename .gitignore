@@ -3,5 +3,6 @@
 /dist
 /files/events
 /files/tempFile
+/files/ipfs
 .env
 /build
