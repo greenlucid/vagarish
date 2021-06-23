@@ -183,15 +183,10 @@ const extractTextBasedFile = async (
 const downloadEvidence = async (
   event: EvidenceEvent
 ): Promise<IpfsEvidence | null> => {
-  // sometimes it starts with "ipfs" instead of "/ipfs/", messing everything up.
-  // will get deprecated and ignored in the future
-  const evidencePath =
-    event.returnValues._evidence[0] === "/"
-      ? event.returnValues._evidence
-      : `/${event.returnValues._evidence}`
-
   try {
-    const ipfsResponse = await axios.get(`${IPFS_ROOT}${evidencePath}`)
+    const ipfsResponse = await axios.get(
+      `${IPFS_ROOT}${event.returnValues._evidence}`
+    )
     const ipfsEvidence = ipfsResponse.data as IpfsEvidence
     return ipfsEvidence
   } catch (e) {
@@ -231,7 +226,9 @@ const evidenceRoutine = async (
 } | null> => {
   //0. abort if hash cannot be retrieved.
   if (getHashFromIpfs(event.returnValues._evidence) === null) {
-    console.log(`_evidence does not match format. got ${event.returnValues._evidence}`)
+    console.log(
+      `_evidence does not match format. got ${event.returnValues._evidence}`
+    )
     return null
   }
 

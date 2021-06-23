@@ -80,10 +80,9 @@ export const parsePdf = async (pdfFile: Buffer): Promise<string | null> => {
 }
 
 export const getHashFromIpfs = (uri: string): string | null => {
-  // _evidence is even a field that should be trusted
+  // _evidence is not a field that should be trusted
   // format is like /ipfs/adfdsafasdfkjasdfkjlasdf/thing.json
-  // will allow not starting with a slash
-  const format = /^\/?ipfs\/[a-zA-Z0-9]{46}\//
+  const format = /^\/ipfs\/[a-zA-Z0-9]{46}\//
   if (!format.test(uri)) {
     return null
   }
