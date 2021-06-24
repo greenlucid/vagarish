@@ -32,7 +32,11 @@ const main = async () => {
 
   app.use("/api/search", async (req, res) => {
     const substring = req.query.substring as string
-    const searchResults = await performSearch(orm.em, { substring })
+    const klerosLiquidId = req.query.id as string
+    const searchResults = await performSearch(orm.em, {
+      substring,
+      klerosLiquidId: parseInt(klerosLiquidId),
+    })
     res.json(searchResults)
   })
 
