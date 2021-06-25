@@ -304,6 +304,11 @@ const mutateAndFlushEvidence = async (
         textContent: parseTextContent(ipfsEvidence),
         hasFile: ipfsEvidenceHasTextFile(ipfsEvidence),
         disputeId: awaitedDispute.id,
+        fileIpfsPath:
+          // only include if it's a string and the format is non-null
+          ipfsEvidence.fileURI && getHashFromIpfs(ipfsEvidence.fileURI)
+            ? ipfsEvidence.fileURI
+            : null,
       })
       await em.persistAndFlush(evidence)
       awaitedDispute.evidenceIds.push(evidence.id)

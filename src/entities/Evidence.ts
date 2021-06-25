@@ -31,6 +31,10 @@ class Evidence {
 
   @Field(() => String, { nullable: true })
   @Property()
+  fileIpfsPath?: string
+
+  @Field(() => String, { nullable: true })
+  @Property()
   createdIn?: Date
 
   // careful, this is the virtual mongodb id, not KlerosLiquid's disputeId
