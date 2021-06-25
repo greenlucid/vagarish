@@ -9,6 +9,9 @@ import Dispute from "./entities/Dispute"
 import Evidence from "./entities/Evidence"
 import { fetchAndStoreEvents, initDataToDb } from "./initialize"
 import { CORS_OPTIONS } from "./constants"
+import path from "path"
+
+const goodDirname = __dirname.slice(0, -5)
 
 const main = async () => {
   const orm = await MikroORM.init({
@@ -43,6 +46,9 @@ const main = async () => {
   apolloServer.applyMiddleware({ app, cors: CORS_OPTIONS })
 
   app.use(express.static("build"))
+  app.get("*", (_req, res) => {
+    res.sendFile(path.resolve(goodDirname, "build", "index.html"))
+  })
 
   app.listen(process.env.PORT || 4000, () => {
     console.log(`server started on port ${process.env.PORT}`)
