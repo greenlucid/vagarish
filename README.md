@@ -1,4 +1,5 @@
 Vagarish is a search engine for Kleros. For the frontend, go to [vagarish-web](https://github.com/greenlucid/vagarish-web)
+Try it out at [vagarish.forer.es](https://vagarish.forer.es)
 
 # Info
 
