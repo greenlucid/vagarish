@@ -10,12 +10,13 @@ import Evidence from "./entities/Evidence"
 import { fetchAndStoreEvents, initDataToDb } from "./initialize"
 import { CORS_OPTIONS } from "./constants"
 import path from "path"
+import Block from "./entities/Block"
 
 const goodDirname = __dirname.slice(0, -5)
 
 const main = async () => {
   const orm = await MikroORM.init({
-    entities: [Dispute, Evidence],
+    entities: [Dispute, Evidence, Block],
     dbName: "vagarish",
     type: "mongo",
     clientUrl: process.env.MONGO_URL || "mongodb://localhost:27017",

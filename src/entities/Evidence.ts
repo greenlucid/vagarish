@@ -1,4 +1,4 @@
-import { Field, ObjectType } from "type-graphql"
+import { Field, Int, ObjectType } from "type-graphql"
 import {
   Entity,
   PrimaryKey,
@@ -44,6 +44,10 @@ class Evidence {
   // careful, this is the virtual mongodb id, not KlerosLiquid's disputeId
   @Property()
   disputeId!: string
+
+  @Field(() => Int)
+  @Property()
+  timestamp!: number
 }
 
 export default Evidence

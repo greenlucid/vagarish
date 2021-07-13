@@ -36,6 +36,7 @@ import {
   parseTextContent,
 } from "./utils"
 import path from "path"
+import Block from "./entities/Block"
 
 const goodDirname = __dirname.slice(0, -5)
 
@@ -278,6 +279,26 @@ const evidenceRoutine = async (
   return { evidence: sureEvidence, fileTextContent: undefined }
 }
 
+const getBlockTimestamp = async (
+  blockNumber: number,
+  em: EntityManager<IDatabaseDriver<Connection>>
+): Promise<number> => {
+  // try to get it off db.
+  const dbBlock = await em.findOne(Block, { blockNumber })
+  if (dbBlock === null) {
+    // wasn't found in db, fetch from infura and save in db.
+    const block = await web3.eth.getBlock(blockNumber)
+    const newBlock = em.create(Block, {
+      blockNumber,
+      timestamp: block.timestamp,
+    })
+    await em.persistAndFlush(newBlock)
+    return block.timestamp as number
+  } else {
+    return dbBlock.timestamp
+  }
+}
+
 const mutateAndFlushEvidence = async (
   event: EvidenceEvent,
   em: EntityManager<IDatabaseDriver<Connection>>
@@ -298,6 +319,7 @@ const mutateAndFlushEvidence = async (
         fileTextContent: string | null | undefined
       }
     const awaitedDispute = await dispute
+    const timestamp = await getBlockTimestamp(event.blockNumber, em)
     if (awaitedDispute !== null) {
       const evidence = em.create(Evidence, {
         fileTextContent,
@@ -305,6 +327,7 @@ const mutateAndFlushEvidence = async (
         hasFile: ipfsEvidenceHasTextFile(ipfsEvidence),
         disputeId: awaitedDispute.id,
         byAddress: event.returnValues._party,
+        timestamp,
         fileIpfsPath:
           // only include if it's a string and the format is non-null
           ipfsEvidence.fileURI && getHashFromIpfs(ipfsEvidence.fileURI)
