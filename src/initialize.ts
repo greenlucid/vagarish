@@ -30,6 +30,7 @@ import Evidence from "./entities/Evidence"
 import { IPFS_ROOT } from "./constants"
 import {
   download,
+  getAllPastEvents,
   getHashFromIpfs,
   ipfsEvidenceHasTextFile,
   parsePdf,
@@ -70,27 +71,33 @@ const getDisputeCreations = async () => {
   })
 }
 
-const getArbitrableDisputeEvidence = async (arbitrableAddress: string) => {
-  // if this arbitrableABI does not work
-  // I will try to get the ABI through etherscan api
-  // like this:
-  // https://api.etherscan.io/api?module=contract&action=getabi&address=0xebcf3bca271b26ae4b162ba560e243055af0e679
+const getArbitrableDisputeEvidence = async (
+  arbitrableAddress: string,
+  currentBlockNumber: number
+) => {
   const arbitrableContract = new web3.eth.Contract(
     arbitrableABI,
     arbitrableAddress
   )
-  const disputeEvents = await arbitrableContract.getPastEvents("Dispute", {
-    fromBlock: 0,
-    toBlock: "latest",
-  })
-  const evidenceEvents = await arbitrableContract.getPastEvents("Evidence", {
-    fromBlock: 0,
-    toBlock: "latest",
-  })
+
+  const disputeEvents = await getAllPastEvents(
+    arbitrableContract,
+    "Dispute",
+    0,
+    currentBlockNumber
+  )
+  const evidenceEvents = await getAllPastEvents(
+    arbitrableContract,
+    "Evidence",
+    0,
+    currentBlockNumber
+  )
   return { disputes: disputeEvents, evidences: evidenceEvents }
 }
 
 export const fetchAndStoreEvents = async () => {
+  const currentBlockNumber = await web3.eth.getBlockNumber()
+
   const allDisputeCreations =
     (await getDisputeCreations()) as DisputeCreationEvent[]
   fs.writeFileSync(
@@ -108,7 +115,8 @@ export const fetchAndStoreEvents = async () => {
   let i: number
   for (i = 0; i < distinctArbitrables.length; i++) {
     const arbitrableData = await getArbitrableDisputeEvidence(
-      distinctArbitrables[i]
+      distinctArbitrables[i],
+      currentBlockNumber
     )
     arbitrableDatas.push(arbitrableData)
     console.log(`got ${i + 1} of ${distinctArbitrables.length}`)

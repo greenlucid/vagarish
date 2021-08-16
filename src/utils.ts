@@ -1,4 +1,5 @@
 import { IpfsEvidence } from "./types"
+import { Contract, EventData } from "web3-eth-contract"
 import pdfParse from "pdf-parse"
 
 const understoodFormats = ["pdf", "txt", "md"]
@@ -93,4 +94,50 @@ export const getHashFromIpfs = (uri: string): string | null => {
   const secondPoint = uri.slice(firstPoint).indexOf("/") + firstPoint
   const hash = uri.slice(firstPoint, secondPoint)
   return hash
+}
+
+export const getAllPastEvents = async (
+  contract: Contract,
+  eventName: string,
+  startBlock: number,
+  lastBlock: number
+): Promise<EventData[]> => {
+  // bypasses infura 10000 result limit with recursion
+  // make request
+  try {
+    const events = await contract.getPastEvents(eventName, {
+      fromBlock: startBlock,
+      toBlock: lastBlock,
+    })
+    return events
+  } catch (error) {
+    if (/query returned more than 10000 results/.test(error.message)) {
+      // find a middle point between startBlock and lastBlock
+      // call two separate getAllPastEvents and await them, then return both concat.
+      const middlePoint = Math.floor((startBlock + lastBlock) / 2)
+      console.log(
+        `too many. will get from ${startBlock}->${middlePoint} and ${
+          middlePoint + 1
+        }->${lastBlock}`
+      )
+      const firstHalf = await getAllPastEvents(
+        contract,
+        eventName,
+        startBlock,
+        middlePoint
+      )
+      const secondHalf = await getAllPastEvents(
+        contract,
+        eventName,
+        middlePoint + 1,
+        lastBlock
+      )
+      return firstHalf.concat(secondHalf)
+    } else {
+      console.log(
+        "Got an error that is not 'more than 10000 results', throwing it..."
+      )
+      throw error
+    }
+  }
 }
