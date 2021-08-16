@@ -16,7 +16,7 @@ export const ipfsEvidenceHasTextFile = (ipfsEvidence: IpfsEvidence) => {
 export const parseTextContent = (ipfsEvidence: IpfsEvidence) => {
   return `${ipfsEvidence.name ? ipfsEvidence.name : ""}\n${
     ipfsEvidence.title ? ipfsEvidence.title : ""
-  }\n${ipfsEvidence.description}`
+  }\n${ipfsEvidence.description || ""}`
 }
 
 // download.js
