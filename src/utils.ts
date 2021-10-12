@@ -111,7 +111,7 @@ export const getAllPastEvents = async (
     })
     return events
   } catch (error) {
-    if (/query returned more than 10000 results/.test(error.message)) {
+    if (error instanceof Error && /query returned more than 10000 results/.test(error.message)) {
       // find a middle point between startBlock and lastBlock
       // call two separate getAllPastEvents and await them, then return both concat.
       const middlePoint = Math.floor((startBlock + lastBlock) / 2)

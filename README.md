@@ -57,9 +57,9 @@ Reload apt `sudo apt-get update`
 
 Install `sudo apt-get install -y mongodb-org`
 
-Start it `sudo systemclt start mongod`
+Start it `sudo systemctl start mongod`
 
-Set it to start on reboot: `sudo systemclt enable mongod`
+Set it to start on reboot: `sudo systemctl enable mongod`
 
 ### Server stuff
 
@@ -76,7 +76,7 @@ The initial seeding takes way longer than future updates.
 
 `cd vagarish`
 
-`mkdir files/events files/ipfs files/tempFile`
+`mkdir files/events files/ipfs`
 
 `npm run init`
 
