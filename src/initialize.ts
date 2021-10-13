@@ -374,7 +374,7 @@ export const initDataToDb = async (
 
   disputeCreations.forEach((event) => createAndPersistDispute(event, em))
   await em.flush()
-
+  console.log("length:",arbitrableDatas.length, "first 10: ", arbitrableDatas.slice(0,10) )
   const allDisputeEvents = arbitrableDatas
     .map((datas) => datas.disputes)
     .flat(2)
