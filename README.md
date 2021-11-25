@@ -11,8 +11,14 @@ It also provides GraphQL queries to expose the data. They can be fetched from th
 
 ## API
 
-Just query `/api/search?substring=thing` and you'll get a JSON with the search results.
-Vagarish is too unstable and early in development, please do not use it until the returned fields are set in stone.
+- For text, just query `/api/search?substring=thing` and you'll get a JSON with the search results. Sadly, it's case sensitive and it will look for the substring itself.
+- `/api/search?id=1000` to fetch a dispute with all its evidence
+- `/api/search?courtId=23` to fetch evidence from a court
+- `/api/search?by=0x001FE2CdBEeB0743679E958C0861Dd8788B28b19` to fetch all evidence by an address
+- [This hasn't been tested] You can combine queries with &: `/api/search?courtId=23&substring=address`, this will fetch all evidence containing `address` in court 23.
+
+Complex queries may break because the search logic really is spaghetti code. Add an issue if you notice something odd.
+
 Alternatively, you can use GraphQL by connecting to `/graphql`. Check the source code for the required fields.
 
 ## How to deploy your own Vagarish

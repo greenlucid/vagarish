@@ -37,11 +37,13 @@ const main = async () => {
   app.use("/api/search", async (req, res) => {
     const substring = req.query.substring as string
     const klerosLiquidId = req.query.id as string
-    const by = req.query.by as string    
+    const by = req.query.by as string
+    const courtId = req.query.courtId as string    
     const searchResults = await performSearch(orm.em, {
       substring,
       klerosLiquidId: parseInt(klerosLiquidId),
-      by
+      by,
+      courtId: parseInt(courtId)
     })
     res.json(searchResults)
   })

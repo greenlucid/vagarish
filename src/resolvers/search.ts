@@ -20,6 +20,9 @@ class SearchInput {
 
   @Field(() => String, {nullable: true})
   by?: string
+
+  @Field(() => Int, {nullable: true})
+  courtId?: number
 }
 
 const searchWithId = async (
@@ -31,7 +34,7 @@ const searchWithId = async (
   // first get the case
   
   const matchedDispute = await em.findOne(Dispute, {
-    klerosLiquidId: klerosLiquidId.toString(),
+    klerosLiquidId: klerosLiquidId.toString()
   })
   if (!matchedDispute) return null
 
@@ -93,9 +96,10 @@ const searchWithId = async (
 const searchWithoutId = async (
   em: EntityManager<IDatabaseDriver<Connection>>,
   substring?: string,
-  by?: string
+  by?: string,
+  courtId?: number
 ): Promise<{ disputeList: Dispute[]; evidenceList: Evidence[] } | null> => {
-  if (!substring && !by) return null
+  if (!substring && !by && courtId == undefined) return null
   const querySubstring = substring ? substring : ""
   const getEvidenceVariables = () => {
     if (!by) {
@@ -132,8 +136,16 @@ const searchWithoutId = async (
   const disputeIds = matchedEvidences.map((evidence) => evidence.disputeId)
 
   const getDisputeVariables = () => {
-    return {
-      id: { $in: disputeIds },
+    if (courtId != null || courtId != undefined) {
+      return {
+        courtId: courtId,
+        id: { $in: disputeIds }
+      }
+    }
+    else {
+      return {
+        id: { $in: disputeIds }
+      }
     }
   }
 
@@ -147,24 +159,26 @@ const executeProperSearch = async (
   em: EntityManager<IDatabaseDriver<Connection>>,
   substring?: string,
   klerosLiquidId?: number,
-  by?: string
+  by?: string,
+  courtId?: number
 ) => {
   if (klerosLiquidId) {
     return searchWithId(em, klerosLiquidId, substring, by)
   } else {
-    return searchWithoutId(em, substring, by)
+    return searchWithoutId(em, substring, by, courtId)
   }
 }
 
 export const performSearch = async (
   em: EntityManager<IDatabaseDriver<Connection>>,
-  { substring, klerosLiquidId, by }: SearchInput
+  { substring, klerosLiquidId, by, courtId }: SearchInput
 ): Promise<SearchResult[]> => {
   const performSearchReturn = await executeProperSearch(
     em,
     substring,
     klerosLiquidId,
-    by
+    by,
+    courtId
   )
   if (!performSearchReturn) return []
   const { disputeList, evidenceList } = performSearchReturn
@@ -174,14 +188,15 @@ export const performSearch = async (
     id: dispute.id,
     klerosLiquidId: dispute.klerosLiquidId,
     arbitrable: dispute.arbitrable,
+    courtId: dispute.courtId,
     matchedEvidence: [],
   }))
   // push evidence into result cores
   evidenceList.forEach((evidence) => {
     const searchResult = searchResultCores.find(
       (searchResult) => searchResult.id === evidence.disputeId
-    ) as SearchResult
-    searchResult.matchedEvidence.push(evidence)
+    )
+    if (searchResult) searchResult.matchedEvidence.push(evidence)
   })
 
   return searchResultCores

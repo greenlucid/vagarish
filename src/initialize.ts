@@ -73,7 +73,8 @@ const getDisputeCreations = async () => {
 
 const getArbitrableDisputeEvidence = async (
   arbitrableAddress: string,
-  currentBlockNumber: number
+  currentBlockNumber: number,
+  shitflag: boolean
 ) => {
   const arbitrableContract = new web3.eth.Contract(
     arbitrableABI,
@@ -86,13 +87,29 @@ const getArbitrableDisputeEvidence = async (
     0,
     currentBlockNumber
   )
+
   const evidenceEvents = await getAllPastEvents(
     arbitrableContract,
     "Evidence",
     0,
     currentBlockNumber
   )
+  if (shitflag) {
+    console.log(evidenceEvents)
+  }
   return { disputes: disputeEvents, evidences: evidenceEvents }
+}
+
+const getDisputeToSubcourtIdArray = async (disputeCount: number) => {
+  // This func takes a few minutes
+  let i = 0;
+  const subcourtIds: number[] = []
+  for (; i < disputeCount; i++) {
+    const dispute = await klerosLiquid.methods.disputes(i).call()
+    subcourtIds[i] = Number(dispute.subcourtID)
+    console.log(`dispute to court: got ${i} of ${disputeCount - 1}`)
+  }
+  return subcourtIds;
 }
 
 export const fetchAndStoreEvents = async () => {
@@ -105,6 +122,24 @@ export const fetchAndStoreEvents = async () => {
     JSON.stringify(allDisputeCreations),
     "utf-8"
   )
+
+  // check if disputeToSubourtId update is needed
+  const previousDisputeToSubcourt = JSON.parse(fs.readFileSync(
+    path.join(goodDirname, "files/events/subcourtIds.json"),
+    "utf-8"
+  ))
+
+  if (previousDisputeToSubcourt.length !== allDisputeCreations.length) {
+    const subcourtIds = await getDisputeToSubcourtIdArray(allDisputeCreations.length)
+    fs.writeFileSync(
+      path.join(goodDirname, "files/events/subcourtIds.json"),
+      JSON.stringify(subcourtIds),
+      "utf-8"
+    )
+  } else {
+    console.log("there's no need to update disputeToSubcourtId array")
+  }
+
   const distinctArbitrables = allDisputeCreations
     .map((disputeCreation) => disputeCreation.returnValues._arbitrable)
     .reduce(
@@ -116,7 +151,8 @@ export const fetchAndStoreEvents = async () => {
   for (i = 0; i < distinctArbitrables.length; i++) {
     const arbitrableData = await getArbitrableDisputeEvidence(
       distinctArbitrables[i],
-      currentBlockNumber
+      currentBlockNumber,
+      i === 32
     )
     arbitrableDatas.push(arbitrableData)
     console.log(`got ${i + 1} of ${distinctArbitrables.length}`)
@@ -130,6 +166,7 @@ export const fetchAndStoreEvents = async () => {
 
 const createAndPersistDispute = (
   event: DisputeCreationEvent,
+  subcourtId: number,
   em: EntityManager<IDatabaseDriver<Connection>>
 ) => {
   // cannot get courtId from disputeCreation event
@@ -138,6 +175,7 @@ const createAndPersistDispute = (
     klerosLiquidId: event.returnValues._disputeID,
     arbitrable: event.returnValues._arbitrable,
     evidenceIds: [],
+    courtId: subcourtId
   })
 
   em.persist(dispute)
@@ -365,6 +403,14 @@ export const initDataToDb = async (
       "utf-8"
     )
   ) as DisputeCreationEvent[]
+
+  const subcourtIds = JSON.parse(
+    fs.readFileSync(
+      path.join(goodDirname, "files/events/subcourtIds.json"),
+      "utf-8"
+    )
+  ) as number[]
+
   const arbitrableDatas = JSON.parse(
     fs.readFileSync(
       path.join(goodDirname, "files/events/arbitrableDatas.json"),
@@ -372,7 +418,9 @@ export const initDataToDb = async (
     )
   ) as { disputes: DisputeEvent[]; evidences: EvidenceEvent[] }[]
 
-  disputeCreations.forEach((event) => createAndPersistDispute(event, em))
+  disputeCreations.forEach(
+    (event) => createAndPersistDispute(event, subcourtIds[Number(event.returnValues._disputeID)], em)
+  )
   await em.flush()
 
   const allDisputeEvents = arbitrableDatas
