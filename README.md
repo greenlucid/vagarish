@@ -83,11 +83,13 @@ The initial seeding takes way longer than future updates.
 `cd vagarish`
 
 `mkdir files/events files/ipfs`
+`echo "[]" > files/events/subcourtIds.json`
 
 `npm run init`
 
 First time can take around, 1 hour or 2.
 Next times it's around 15 minutes.
+You will only run `npm run init` next time.
 The website is accessible while it's being seeded or updated.
 If you want your instance to keep up, just come by every week or so.
 
