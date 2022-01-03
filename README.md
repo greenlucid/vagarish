@@ -101,4 +101,6 @@ Vagarish does not listen to live events, it has to update explictly. To do that,
 Because you will be using pm2 to deal with keeping the server alive, you will have to stop pm2, run init, and then restart pm2.
 There is a bash script that does this for you in `update-db.sh`. So, just do `crontab -e` and paste something like this:
 
-`0 0 * * * /root/vagarish/update-db.sh`
+`0 6 * * * /root/vagarish/update-db.sh`
+
+Also do `chmod u+x update-db.sh` so that cron can execute it.
