@@ -50,6 +50,10 @@ const main = async () => {
 
   apolloServer.applyMiddleware({ app, cors: CORS_OPTIONS })
 
+  app.use("/.well-known/acme-challenge/:id", async (req, res) => {
+    res.json({testu: "hello, do you get to this page on challenge?"})
+  })
+
   app.use(express.static("build"))
   app.get("*", (_req, res) => {
     res.sendFile(path.resolve(goodDirname, "build", "index.html"))
