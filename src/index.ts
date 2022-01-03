@@ -7,13 +7,16 @@ import { buildSchema } from "type-graphql"
 import SearchResolver, { performSearch } from "./resolvers/search"
 import Dispute from "./entities/Dispute"
 import Evidence from "./entities/Evidence"
-import { fetchAndStoreEvents /*initDataToDb*/ } from "./initialize"
+import { fetchAndStoreEvents, initDataToDb } from "./initialize"
 import { CORS_OPTIONS } from "./constants"
 import path from "path"
 import Block from "./entities/Block"
 import fs from "fs"
 
 const goodDirname = __dirname.slice(0, -5)
+
+// to check if it's running init with /test
+let updating = false
 
 const main = async () => {
   const orm = await MikroORM.init({
@@ -33,7 +36,7 @@ const main = async () => {
     context: ({ req, res }) => ({ em: orm.em, req, res }),
   })
 
-  app.use("/test", (_req, res) => res.json({ can: "can" }))
+  app.use("/test", (_req, res) => res.json({ can: "can", updating }))
 
   app.use("/api/search", async (req, res) => {
     const substring = req.query.substring as string
@@ -69,7 +72,9 @@ const main = async () => {
   })
 
   if (process.argv.length === 3 && process.argv[2] === "init") {
+    updating = true
     await fetchAndStoreEvents()
+    await initDataToDb(orm.em)
     process.exit()
   }
 }
