@@ -7,7 +7,7 @@ import { buildSchema } from "type-graphql"
 import SearchResolver, { performSearch } from "./resolvers/search"
 import Dispute from "./entities/Dispute"
 import Evidence from "./entities/Evidence"
-import { fetchAndStoreEvents, initDataToDb } from "./initialize"
+import { fetchAndStoreEvents /*initDataToDb*/ } from "./initialize"
 import { CORS_OPTIONS } from "./constants"
 import path from "path"
 import Block from "./entities/Block"
@@ -70,7 +70,7 @@ const main = async () => {
 
   if (process.argv.length === 3 && process.argv[2] === "init") {
     await fetchAndStoreEvents()
-    await initDataToDb(orm.em)
+    process.exit()
   }
 }
 
