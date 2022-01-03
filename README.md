@@ -73,7 +73,9 @@ Set it to start on reboot: `sudo systemctl enable mongod`
 - Then test that it actually works, by running it with `npm start` and checking your domain.
 - Get pm2. [Guide](https://pm2.keymetrics.io/)
 - Get lets encrypt, set it up. [Guide](https://landchad.net/certbot). If node + let's encrypt gives you problems, you can alternatively create a dumb html website, certify it, and then get your real page.
-- Put a cron job so that it renews the certificate automatically, or you'll forget
+- Put a cron job so that it renews the certificate automatically, or you'll forget:
+- * `crontab -e`, create new line at the end.
+- * `0 0 1 */2 * certbot certonly -d vagarish.forer.es --webroot -w /root/vagarish`
 
 ### Seed the database
 
