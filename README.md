@@ -77,14 +77,14 @@ Set it to start on reboot: `sudo systemctl enable mongod`
 - * `crontab -e`, create new line at the end.
 - * `0 0 1 */2 * certbot certonly -d vagarish.forer.es --webroot -w /root/vagarish`
 
-### Seed the database
+### Init the database
 
-Currently Vagarish has to, incredibly, be updated up by hand! I haven't made an script to do this automatically.
 The initial seeding takes way longer than future updates.
 
 `cd vagarish`
 
 `mkdir files/events files/ipfs`
+
 `echo "[]" > files/events/subcourtIds.json`
 
 `npm run init`
@@ -93,6 +93,14 @@ First time can take around, 1 hour or 2.
 Next times it's around 15 minutes.
 You will only run `npm run init` next time.
 The website is accessible while it's being seeded or updated.
-If you want your instance to keep up, just come by every week or so.
+If you want your instance to keep up, you should set up automatic updates.
 
-TODO: make a script you can use with cron, to stop pm2, run `npm run init`, stop it and run pm2 again.
+### Update the database
+
+Vagarish does not listen to live events, it has to update explictly. To do that, you rerun `npm run init`. You can use a cron job for this.
+Because you will be using pm2 to deal with keeping the server alive, you will have to stop pm2, run init, and then restart pm2.
+There is a bash script that does this for you in `update-db.sh`. So, just do `crontab -e` and paste something like this:
+
+`0 6 * * * /root/vagarish/update-db.sh`
+
+Also do `chmod u+x update-db.sh` so that cron can execute it.
