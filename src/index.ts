@@ -11,6 +11,7 @@ import { fetchAndStoreEvents, initDataToDb } from "./initialize"
 import { CORS_OPTIONS } from "./constants"
 import path from "path"
 import Block from "./entities/Block"
+import fs from "fs"
 
 const goodDirname = __dirname.slice(0, -5)
 
@@ -49,6 +50,14 @@ const main = async () => {
   })
 
   apolloServer.applyMiddleware({ app, cors: CORS_OPTIONS })
+
+  app.use("/.well-known/acme-challenge/:id", async (req, res) => {
+    // hacky solution to get certbot to renew
+    // certbot certonly -d vagarish.forer.es --webroot -w ./
+    const id = req.params.id
+    const challenge = fs.readFileSync(`.well-known/acme-challenge/${id}`, "utf-8")
+    res.send(challenge)
+  })
 
   app.use(express.static("build"))
   app.get("*", (_req, res) => {
