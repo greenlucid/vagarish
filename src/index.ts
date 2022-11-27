@@ -13,6 +13,14 @@ import path from "path"
 import Block from "./entities/Block"
 import fs from "fs"
 
+const randomBetween = (min: number, max: number) =>
+  Math.floor(min + Math.random() * (max - min))
+
+export const sleep = (seconds = 0): Promise<void> => {
+  if (seconds === 0) seconds = randomBetween(2, 5)
+  return new Promise((resolve) => setTimeout(resolve, seconds * 1000))
+}
+
 const goodDirname = __dirname.slice(0, -5)
 
 // to check if it's running init with /test
@@ -42,12 +50,12 @@ const main = async () => {
     const substring = req.query.substring as string
     const klerosLiquidId = req.query.id as string
     const by = req.query.by as string
-    const courtId = req.query.courtId as string    
+    const courtId = req.query.courtId as string
     const searchResults = await performSearch(orm.em, {
       substring,
       klerosLiquidId: parseInt(klerosLiquidId),
       by,
-      courtId: parseInt(courtId)
+      courtId: parseInt(courtId),
     })
     res.json(searchResults)
   })
@@ -58,7 +66,10 @@ const main = async () => {
     // hacky solution to get certbot to renew
     // certbot certonly -d vagarish.forer.es --webroot -w ./
     const id = req.params.id
-    const challenge = fs.readFileSync(`.well-known/acme-challenge/${id}`, "utf-8")
+    const challenge = fs.readFileSync(
+      `.well-known/acme-challenge/${id}`,
+      "utf-8"
+    )
     res.send(challenge)
   })
 
@@ -71,11 +82,12 @@ const main = async () => {
     console.log(`server started on port ${process.env.PORT}`)
   })
 
-  if (process.argv.length === 3 && process.argv[2] === "init") {
+  while (true) {
     updating = true
     await fetchAndStoreEvents()
     await initDataToDb(orm.em)
-    process.exit()
+    updating = false
+    await sleep(Number(process.env.UPDATE_TIME))
   }
 }
 
