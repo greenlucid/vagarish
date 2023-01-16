@@ -14,9 +14,8 @@ export const ipfsEvidenceHasTextFile = (ipfsEvidence: IpfsEvidence) => {
 }
 
 export const parseTextContent = (ipfsEvidence: IpfsEvidence) => {
-  return `${ipfsEvidence.name ? ipfsEvidence.name : ""}\n${
-    ipfsEvidence.title ? ipfsEvidence.title : ""
-  }\n${ipfsEvidence.description || ""}`
+  return `${ipfsEvidence.name ? ipfsEvidence.name : ""}\n${ipfsEvidence.title ? ipfsEvidence.title : ""
+    }\n${ipfsEvidence.description || ""}`
 }
 
 // download.js
@@ -116,8 +115,7 @@ export const getAllPastEvents = async (
       // call two separate getAllPastEvents and await them, then return both concat.
       const middlePoint = Math.floor((startBlock + lastBlock) / 2)
       console.log(
-        `too many. will get from ${startBlock}->${middlePoint} and ${
-          middlePoint + 1
+        `too many. will get from ${startBlock}->${middlePoint} and ${middlePoint + 1
         }->${lastBlock}`
       )
       const firstHalf = await getAllPastEvents(
@@ -132,7 +130,14 @@ export const getAllPastEvents = async (
         middlePoint + 1,
         lastBlock
       )
-      return firstHalf.concat(secondHalf)
+      console.log("my halves:", firstHalf.length, secondHalf.length)
+      let concatThing
+      try {
+        concatThing = firstHalf.concat(secondHalf)
+      } catch (error) {
+        console.log("got the concat of null error.", firstHalf.length, secondHalf.length, { contract, eventName, startBlock, lastBlock })
+        return []
+      }
     } else {
       console.log(
         "Got an error that is not 'more than 10000 results', throwing it..."
@@ -140,4 +145,6 @@ export const getAllPastEvents = async (
       throw error
     }
   }
+  // this code path should not be reachable, just to shut up ts
+  return []
 }
