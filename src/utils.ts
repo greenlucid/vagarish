@@ -24,6 +24,7 @@ import https from "https"
 import http from "http"
 import { basename } from "path"
 import { URL } from "url"
+import { sleep } from "./index"
 
 // thanks https://stackoverflow.com/a/66507546/15623042
 export const download = (url: string, filePath: string): Promise<void> => {
@@ -103,6 +104,7 @@ export const getAllPastEvents = async (
 ): Promise<EventData[]> => {
   // bypasses infura 10000 result limit with recursion
   // make request
+  await sleep(2) // also make sure infura doesn't rate limit me. 
   try {
     const events = await contract.getPastEvents(eventName, {
       fromBlock: startBlock,
@@ -131,13 +133,14 @@ export const getAllPastEvents = async (
         lastBlock
       )
       console.log("my halves:", firstHalf.length, secondHalf.length)
-      let concatThing
+      let concatThing: EventData[] = []
       try {
         concatThing = firstHalf.concat(secondHalf)
       } catch (error) {
         console.log("got the concat of null error.", firstHalf.length, secondHalf.length, { contract, eventName, startBlock, lastBlock })
         return []
       }
+      return concatThing
     } else {
       console.log(
         "Got an error that is not 'more than 10000 results', throwing it..."
@@ -145,6 +148,4 @@ export const getAllPastEvents = async (
       throw error
     }
   }
-  // this code path should not be reachable, just to shut up ts
-  return []
 }
