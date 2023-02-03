@@ -1,3 +1,16 @@
+# Hiatus
+
+This project is **not being maintained**, and is no longer hosted in the website stated below. Thanks for trying out Vagarish. Feel free to fork this repository or revive the project.
+
+Despite using Typescript and using a decently simple frontend, this backend is unmaintainable in its current state.
+
+- The whole state was destroyed and rebuilt on every update.
+- It used filesystem and MongoDB in confusing ways
+- Not multichain, nor is it easy to turn it into it
+- PDF parsing stopped working
+
+It was a good concept but it shouldn't be hosted if I don't have time to maintain it.
+
 # Vagarish
 
 Vagarish is a search engine for Kleros. For the frontend, go to [vagarish-web](https://github.com/greenlucid/vagarish-web).
